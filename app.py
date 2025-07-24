@@ -252,5 +252,5 @@ if st.button("▶ غږ واورئ او دوام ورکړئ"):
     render_audio(b64_audio)
     # st.write("Loading app....")
     time.sleep(5.2)
-    st.empty()
+    placeholder.empty()
     main()
