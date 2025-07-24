@@ -10,6 +10,7 @@ from huggingface_hub import login
 from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 from groq import Groq
 import numpy as np
+import time
 
 # 🛠 Load .env
 load_dotenv()
@@ -36,9 +37,9 @@ nest_asyncio.apply()
 st.set_page_config(page_title="Pashto STT → Groq → Pashto TTS", page_icon="🎙", layout="centered")
 st.title("🎙 Pashto STT → LLM → Pashto TTS")
 
-st.subheader("🎤 Record Pashto Audio or Upload File")
+st.subheader("🎤 Record Pashto Audio")
 audio_value = st.audio_input("🎙 Record a voice message")
-uploaded_file = st.file_uploader("📂 Or upload a Pashto audio/video file", type=["wav", "mp4", "m4a"])
+uploaded_file = False
 
 
 @st.cache_resource
@@ -74,14 +75,6 @@ def convert_to_wav(uploaded_bytes: bytes, ext: str) -> str:
     return output_path
 
 
-# def load_audio(path: str, target_sr: int = 16000) -> torch.Tensor:
-#     waveform, sr = torchaudio.load(path)
-#     if sr != target_sr:
-#         resampler = torchaudio.transforms.Resample(orig_freq=sr, new_freq=target_sr)
-#         waveform = resampler(waveform)
-#     return waveform.squeeze()
-
-
 def load_audio(path: str, target_sr: int = 16000) -> torch.Tensor:
     audio = AudioSegment.from_file(path)
     audio = audio.set_channels(1).set_frame_rate(target_sr)
@@ -105,7 +98,7 @@ if audio_value or uploaded_file:
                 f.write(audio_bytes)
                 temp_wav_path = f.name
 
-    st.audio(audio_bytes, format="audio/wav")
+    # st.audio(audio_bytes, format="audio/wav")
 
     try:
         waveform = load_audio(temp_wav_path)
@@ -113,10 +106,10 @@ if audio_value or uploaded_file:
         st.error(f"❌ Failed to load audio: {e}")
         st.stop()
 
-    st.subheader("📈 Audio Waveform")
-    downsampled = waveform.numpy()[::10]
-    st.line_chart(downsampled)
-    st.markdown(f"⏱ **Duration**: {waveform.shape[-1] / TARGET_SR:.2f} sec")
+    # st.subheader("📈 Audio Waveform")
+    # downsampled = waveform.numpy()[::10]
+    # st.line_chart(downsampled)
+    # st.markdown(f"⏱ **Duration**: {waveform.shape[-1] / TARGET_SR:.2f} sec")
 
     inputs = processor(waveform, sampling_rate=TARGET_SR, return_tensors="pt", padding=True)
     with torch.no_grad():
@@ -128,43 +121,43 @@ if audio_value or uploaded_file:
     st.success(transcription)
 
     prompt = f"""
-          ستا دنده دا ده چې کاروونکو ته په پښتو ژبه لنډ، دقیق او دوستانه ځوابونه ورکړې، لکه یو ښه ملګری.
-          [Your task is to provide concise, accurate, and friendly answers to users in Pashto, like a good friend.]
-        
-          بېلګې:
-          [Examples:]
-        
-          User says (in Pashto): سلام، ته څنګه يې؟
-          Model reply (in Pashto): زه ښه يم، مننه. ته څنګه يې؟
-          [User: Hello, how are you? -> Model: I am fine, thank you. How are you?]
-        
-          User says (in Pashto): د کابل هوا څنګه ده؟
-          Model reply (in Pashto): نن په کابل کې هوا وریځ ده. ښه به وي که چترۍ درسره وي!
-          [User: How is the weather in Kabul? -> Model: The weather in Kabul today is cloudy. It would be good to have an umbrella with you!]
-        
-          User says (in Pashto): د پښتنو تاریخ څه دی؟
-          Model reply (in Pashto): پښتانه یوه لرغونې قوم ده چې بډایه کلتور او تاریخ لري. ډېر په زړه پورې!
-          [User: What is the history of Pashtuns? -> Model: Pashtuns are an ancient people with a rich culture and history. Very interesting!]
-        
-          User says (in Pashto): تر ټولو لوړ غر کوم دی؟
-          Model reply (in Pashto): ایوریسټ! ایا ته غواړې چې نور معلومات هم درکړم؟
-          [User: What is the highest mountain? -> Model: Everest! Would you like me to give you more information?]
-        
-          User says (in Pashto): افغانستان د کومې قارې برخه دی؟
-          Model reply (in Pashto): اسیا. آیا نور څه هم غواړې چې پوه شې؟
-          [User: Which continent is Afghanistan part of? -> Model: Asia. Is there anything else you'd like to know?]
-        
-          User says (in Pashto): د موټر چلوولو لپاره څه ته اړتیا لرو؟
-          Model reply (in Pashto): موټر چلوونکی جواز ته اړتیا لرې. ته غواړې موټر وچلوې؟
-          [User: What do we need to drive a car? -> Model: You need a driving license. Do you want to drive a car?]
-        
-          User says (in Pashto): اوبه له کومو عناصرو جوړې دي؟
-          Model reply (in Pashto): اوبه له هایدروجن او اکسیجن څخه جوړې دي. حیرانوونکې نه ده؟
-          [User: What elements are water made of? -> Model: Water is made of Hydrogen and Oxygen. Isn't that amazing?]
-        
-          User says (in Pashto): {transcription}.
-          Model reply (in Pashto):
-        """
+              ستا دنده دا ده چې کاروونکو ته په پښتو ژبه لنډ، دقیق او دوستانه ځوابونه ورکړې، لکه یو ښه ملګری.
+              [Your task is to provide concise, accurate, and friendly answers to users in Pashto, like a good friend.]
+    
+              بېلګې:
+              [Examples:]
+    
+              User says (in Pashto): سلام، ته څنګه يې؟
+              Model reply (in Pashto): زه ښه يم، مننه. ته څنګه يې؟
+              [User: Hello, how are you? -> Model: I am fine, thank you. How are you?]
+    
+              User says (in Pashto): د کابل هوا څنګه ده؟
+              Model reply (in Pashto): نن په کابل کې هوا وریځ ده. ښه به وي که چترۍ درسره وي!
+              [User: How is the weather in Kabul? -> Model: The weather in Kabul today is cloudy. It would be good to have an umbrella with you!]
+    
+              User says (in Pashto): د پښتنو تاریخ څه دی؟
+              Model reply (in Pashto): پښتانه یوه لرغونې قوم ده چې بډایه کلتور او تاریخ لري. ډېر په زړه پورې!
+              [User: What is the history of Pashtuns? -> Model: Pashtuns are an ancient people with a rich culture and history. Very interesting!]
+    
+              User says (in Pashto): تر ټولو لوړ غر کوم دی؟
+              Model reply (in Pashto): ایوریسټ! ایا ته غواړې چې نور معلومات هم درکړم؟
+              [User: What is the highest mountain? -> Model: Everest! Would you like me to give you more information?]
+    
+              User says (in Pashto): افغانستان د کومې قارې برخه دی؟
+              Model reply (in Pashto): اسیا. آیا نور څه هم غواړې چې پوه شې؟
+              [User: Which continent is Afghanistan part of? -> Model: Asia. Is there anything else you'd like to know?]
+    
+              User says (in Pashto): د موټر چلوولو لپاره څه ته اړتیا لرو؟
+              Model reply (in Pashto): موټر چلوونکی جواز ته اړتیا لرې. ته غواړې موټر وچلوې؟
+              [User: What do we need to drive a car? -> Model: You need a driving license. Do you want to drive a car?]
+    
+              User says (in Pashto): اوبه له کومو عناصرو جوړې دي؟
+              Model reply (in Pashto): اوبه له هایدروجن او اکسیجن څخه جوړې دي. حیرانوونکې نه ده؟
+              [User: What elements are water made of? -> Model: Water is made of Hydrogen and Oxygen. Isn't that amazing?]
+    
+              User says (in Pashto): {transcription}.
+              Model reply (in Pashto):
+            """
 
     try:
         with st.spinner("🤖 Thinking..."):
@@ -189,8 +182,12 @@ if audio_value or uploaded_file:
         with open(tts_out, "rb") as f:
             tts_bytes = f.read()
         st.audio(tts_bytes, format="audio/mp3")
-        st.download_button("⬇ Download Audio", tts_bytes, file_name="groq_pashto.mp3")
+        # st.download_button("⬇ Download Audio", tts_bytes, file_name="groq_pashto.mp3")
     except Exception as e:
         st.error(f"TTS Generation Failed: {e}")
+    finally:
+        time.sleep(5)
+        st.empty()
 else:
-    st.warning("📢 Please upload or record Pashto audio to begin.")
+    st.warning("📢 Speak to begin.")
+    st.empty()
