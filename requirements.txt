@@ -1,0 +1,10 @@
+streamlit
+torch
+transformers
+huggingface_hub
+groq
+pydub
+edge-tts
+nest_asyncio
+python-dotenv
+numpy
