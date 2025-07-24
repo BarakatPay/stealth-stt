@@ -16,7 +16,7 @@ from groq import Groq
 import numpy as np
 import time
     
-    
+placeholder = st.empty()    
 
 nest_asyncio.apply()
 st.set_page_config(page_title="ښه راغلاست", layout="wide")
