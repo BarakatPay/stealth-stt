@@ -220,37 +220,42 @@ async def generate_tts_b64(text: str) -> str:
 # 📦 Generate once to avoid delay on click
 b64_audio = asyncio.get_event_loop().run_until_complete(generate_tts_b64(pashto_message))
 
-# 🎉 Welcome Message
-st.markdown(
-    """
-    <div style="text-align: center; margin-top: 100px;">
-        <h1 style="font-size: 3.5rem;">ستړی مشې! 🌟</h1>
-        <p style="font-size: 1.5rem;">دلته تاسو کولی شئ خپل سفر پیل کړئ</p>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
 
-# 🎧 Audio tag (rendered only after click)
-def render_audio(b64: str):
+if not st.session_state.app_started:
+    # 🎉 Welcome Message
     st.markdown(
-        f"""
-        <audio controls autoplay style="display:None">
-            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
-        </audio>
+        """
+        <div style="text-align: center; margin-top: 100px;">
+            <h1 style="font-size: 3.5rem;">ستړی مشې! 🌟</h1>
+            <p style="font-size: 1.5rem;">دلته تاسو کولی شئ خپل سفر پیل کړئ</p>
+        </div>
         """,
         unsafe_allow_html=True
     )
 
-# 🚀 Launch app.py subprocess
-def launch_new_app():
-    subprocess.Popen(["streamlit", "run", "main.py"])
+    # 🎧 Audio tag (rendered only after click)
+    def render_audio(b64: str):
+        st.markdown(
+            f"""
+            <audio controls autoplay style="display:None">
+                <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+            </audio>
+            """,
+            unsafe_allow_html=True
+        )
 
-# 👇 Main button
-if st.button("▶ غږ واورئ او دوام ورکړئ"):
-    st.success("غږ پلی شو!")
-    render_audio(b64_audio)
-    # st.write("Loading app....")
-    time.sleep(5.2)
-    placeholder.empty()
+    # 🚀 Launch app.py subprocess
+    def launch_new_app():
+        subprocess.Popen(["streamlit", "run", "main.py"])
+
+    # 👇 Main button
+    if st.button("▶ غږ واورئ او دوام ورکړئ"):
+        st.success("غږ پلی شو!")
+        render_audio(b64_audio)
+        # st.write("Loading app....")
+        time.sleep(5.2)
+        placeholder.empty()
+        st.session_state.app_started = True
+        main()
+else:
     main()
