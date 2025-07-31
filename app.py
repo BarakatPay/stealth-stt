@@ -202,9 +202,18 @@ def main():
         st.warning("📢 Speak to begin.")
         st.empty()
 
+
+nest_asyncio.apply()
+st.set_page_config(page_title="ښه راغلاست", layout="wide")
+if "app_started" not in st.session_state:
+    st.session_state.app_started = False
+
+
 # pashto_message = "ستړی مشې! دلته تاسو کولی شئ خپل سفر پیل کړئ."
 pashto_message = """ښه راغلاست،..... 
 مهرباني وکړئ انتظار وکړئ تر هغه چې موږ تاسو ته لارښوونه کوو."""
+
+
 # 🔊 Generate TTS and return base64
 async def generate_tts_b64(text: str) -> str:
     temp_path = tempfile.mktemp(suffix=".mp3")
