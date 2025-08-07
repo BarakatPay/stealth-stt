@@ -29,7 +29,7 @@ def main():
     HF_MODEL_ID = st.secrets["HF_MODEL_ID"]
     TTS_VOICE = st.secrets["TTS_VOICE"]
     TARGET_SR = int(st.secrets["TARGET_SR"])
-    HF_TOKEN = st.secrets["HF_API_TOKEN"]
+    HF_TOKEN = True
     GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
     
     if not HF_TOKEN or not GROQ_API_KEY:
@@ -37,7 +37,7 @@ def main():
         st.stop()
     
     # 🔐 Hugging Face login
-    login(token=HF_TOKEN)
+    # login(token=HF_TOKEN)
     
     # 🧠 Groq client
     groq_client = Groq(api_key=GROQ_API_KEY)
@@ -268,3 +268,4 @@ if not st.session_state.app_started:
         main()
 else:
     main()
+
