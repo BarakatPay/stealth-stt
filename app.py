@@ -236,7 +236,6 @@ if not st.session_state.app_started:
         """
         <div style="text-align: center; margin-top: 100px;">
             <h1 style="font-size: 3.5rem;">ستړی مشې! 🌟</h1>
-            <p style="font-size: 1.5rem;">دلته تاسو کولی شئ خپل سفر پیل کړئ</p>
         </div>
         """,
         unsafe_allow_html=True
@@ -268,4 +267,5 @@ if not st.session_state.app_started:
         main()
 else:
     main()
+
 
